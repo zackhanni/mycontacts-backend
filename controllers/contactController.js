@@ -1,5 +1,6 @@
 const asyncHandler = require("express-async-handler");
 const Contact = require("../models/contactModel");
+
 //@desc Get all contacts
 //@route Get /api/contacts
 //@access public
@@ -12,11 +13,15 @@ const getContacts = asyncHandler(async (req, res) => {
 //@route POST /api/contacts
 //@access public
 const createContact = asyncHandler(async (req, res) => {
-  console.log("The request body is:", req.body);
   const { name, email, phone } = req.body;
   if (!name || !email || !phone) {
     res.status(400);
     throw new Error("Please fill in all fields.");
+  }
+  const contactExists = await Contact.findOne({ email });
+  if (contactExists) {
+    res.status(400);
+    throw new Error("Contact email already exists");
   }
   const contact = await Contact.create({ name, email, phone });
   res.status(201).json(contact);
